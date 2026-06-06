@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>Vocabulary Meaning Game</title>
+
+<style>
+body{
+  font-family:Arial, sans-serif;
+  text-align:center;
+  background:linear-gradient(#fff0f6,#e7f5ff);
+  padding:20px;
+}
+
+.card{
+  background:white;
+  max-width:720px;
+  margin:auto;
+  padding:25px;
+  border-radius:25px;
+  box-shadow:0 0 20px #aaa;
+}
+
+h1{
+  font-size:42px;
+  color:#d6336c;
+}
+
+#stage{
+  font-size:30px;
+  font-weight:bold;
+  color:#5f3dc4;
+}
+
+.hpBox{
+  width:420px;
+  height:30px;
+  border:3px solid #333;
+  margin:15px auto;
+  border-radius:20px;
+  overflow:hidden;
+  background:white;
+}
+
+#hpBar{
+  height:100%;
+  width:100%;
+  background:#ff6b6b;
+  transition:0.3s;
+}
+
+#monster{
+  font-size:110px;
+  margin:15px;
+  transition:0.2s;
+}
+
+.attack{
+  transform:scale(1.3) rotate(10deg);
+}
+
+.shake{
+  animation:shake 0.3s;
+}
+
+@keyframes shake{
+  0%{transform:translateX(0);}
+  25%{transform:translateX(-10px);}
+  50%{transform:translateX(10px);}
+  75%{transform:translateX(-10px);}
+  100%{transform:translateX(0);}
+}
+
+#question{
+  font-size:44px;
+  color:#d6336c;
+  font-weight:bold;
+  margin:20px;
+}
+
+#meaning{
+  font-size:24px;
+  color:#333;
+}
+
+input{
+  font-size:26px;
+  padding:12px;
+  width:360px;
+  text-align:center;
+  border-radius:12px;
+  border:2px solid #555;
+}
+
+button{
+  font-size:22px;
+  padding:12px 22px;
+  margin:8px;
+  border-radius:15px;
+  cursor:pointer;
+}
+
+#result{
+  font-size:28px;
+  font-weight:bold;
+  min-height:40px;
+  margin:18px;
+}
+
+#info{
+  font-size:24px;
+}
+
+.small{
+  color:#666;
+  font-size:18px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>📘 英文單字意思挑戰</h1>
+
+<div class="card">
+
+<div id="stage">第 1 關：小怪森林 👾</div>
+
+<div class="hpBox">
+  <div id="hpBar"></div>
+</div>
+
+<div id="monster">👾</div>
+
+<div id="meaning">請看英文，輸入中文意思</div>
+
+<div id="question">按「開始」出題！</div>
+
+<input id="answer" placeholder="輸入中文意思">
+
+<br><br>
+
+<button onclick="startGame()">開始 / 下一題</button>
+<button onclick="checkAnswer()">⚔️ Attack!</button>
+<button onclick="resetGame()">重新開始</button>
+
+<div id="result"></div>
+
+<div id="info">HP: 5｜第1關進度：0 / 5｜總分：0</div>
+
+<p class="small">提示：輸入中文後，可以直接按 Enter 攻擊</p>
+
+</div>
+
+<script>
+const words = [
+["attention","注意力"],
+["public art","公共藝術"],
+["community","社區"],
+["mural","壁畫"],
+["ordinary","普通的"],
+["inspire","啟發"],
+["graffiti","塗鴉"],
+["message","訊息"],
+["canvas","畫布"],
+["creative","有創意的"],
+["teamwork","團隊合作"],
+["describe","描述"],
+["ceremony","典禮"],
+["celebration","慶祝活動"],
+["extremely","非常地"],
+["melt","融化"],
+["helpful","樂於助人的"],
+["gentle","溫柔的"],
+["silent","安靜的"],
+["performance","表演"],
+["experience","經驗"],
+["successful","成功的"],
+["decision","決定"],
+["powerful","強大的"],
+["graceful","優雅的"],
+["frightening","可怕的"],
+["quote","名言"],
+["inspired","受到啟發的"],
+["reporter","記者"],
+["event","活動"],
+["interview","採訪"],
+["rise","升起"],
+["rapidly","快速地"],
+["pastry","酥皮點心"],
+["calmly","冷靜地"],
+["fluently","流利地"],
+["achieve","達成"],
+["decorate","裝飾"],
+["announce","宣布"],
+["memorable","難忘的"],
+["organized","有條理的"],
+["separate","分開"],
+["expect","預期"],
+["crumb","麵包屑"],
+["painful","疼痛的"],
+["poisonous","有毒的"]
+];
+
+let currentWord = null;
+let hp = 5;
+let maxHp = 5;
+let score = 0;
+let stage = 1;
+let stagePoint = 0;
+let needPoint = 5;
+let gameClear = false;
+
+function sound(freq){
+  const audio = new (window.AudioContext || window.webkitAudioContext)();
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+  osc.frequency.value = freq;
+  osc.connect(gain);
+  gain.connect(audio.destination);
+  osc.start();
+  gain.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.25);
+  osc.stop(audio.currentTime + 0.25);
+}
+
+function getMonster(){
+  if(stage === 1) return "👾";
+  if(stage === 2) return "💀";
+  return "🐲";
+}
+
+function getStageName(){
+  if(stage === 1) return "第 1 關：小怪森林 👾";
+  if(stage === 2) return "第 2 關：骷髏洞窟 💀";
+  return "第 3 關：Boss 龍之城 🐲";
+}
+
+function updateInfo(){
+  document.getElementById("stage").textContent = getStageName();
+  document.getElementById("monster").textContent = getMonster();
+
+  document.getElementById("hpBar").style.width =
+    (hp / maxHp * 100) + "%";
+
+  document.getElementById("info").textContent =
+    "HP: " + hp + "｜第" + stage + "關進度：" +
+    stagePoint + " / " + needPoint + "｜總分：" + score;
+}
+
+function startGame(){
+  if(gameClear) return;
+
+  if(hp <= 0){
+    document.getElementById("result").textContent = "💀 沒血了，請重新開始！";
+    return;
+  }
+
+  const randomIndex = Math.floor(Math.random() * words.length);
+  currentWord = words[randomIndex];
+
+  document.getElementById("question").textContent = currentWord[0];
+  document.getElementById("answer").value = "";
+  document.getElementById("result").textContent = "";
+  document.getElementById("monster").textContent = getMonster();
+  document.getElementById("answer").focus();
+}
+
+function cleanText(text){
+  return text
+    .trim()
+    .replace(/，/g,",")
+    .replace(/、/g,",")
+    .replace(/\s/g,"");
+}
+
+function checkAnswer(){
+  if(gameClear) return;
+
+  if(currentWord === null){
+    document.getElementById("result").textContent = "請先按「開始」！";
+    document.getElementById("result").style.color = "#f08c00";
+    return;
+  }
+
+  const userAnswer = cleanText(document.getElementById("answer").value);
+  const correctAnswer = cleanText(currentWord[1]);
+
+  if(userAnswer === correctAnswer || correctAnswer.includes(userAnswer) || userAnswer.includes(correctAnswer)){
+    score++;
+    stagePoint++;
+    attackAnimation();
+    sound(800);
+
+    document.getElementById("result").textContent = "✅ Great! 意思答對了！";
+    document.getElementById("result").style.color = "green";
+    currentWord = null;
+
+    if(stagePoint >= needPoint){
+      nextStage();
+    }
+
+  }else{
+    hp--;
+    wrongAnimation();
+    sound(180);
+
+    document.getElementById("result").textContent =
+      "❌ Oops! 正確意思是：" + currentWord[1];
+    document.getElementById("result").style.color = "red";
+
+    if(hp <= 0){
+      document.getElementById("monster").textContent = "💀";
+      document.getElementById("question").textContent = "Game Over!";
+      document.getElementById("result").textContent = "💀 Game Over! 再挑戰一次！";
+      currentWord = null;
+    }
+  }
+
+  updateInfo();
+}
+
+function attackAnimation(){
+  const m = document.getElementById("monster");
+  m.classList.add("attack");
+  setTimeout(()=>m.classList.remove("attack"),200);
+}
+
+function wrongAnimation(){
+  const m = document.getElementById("monster");
+  m.classList.add("shake");
+  setTimeout(()=>m.classList.remove("shake"),300);
+}
+
+function nextStage(){
+  if(stage < 3){
+    stage++;
+    stagePoint = 0;
+    hp = maxHp;
+
+    document.getElementById("question").textContent =
+      "恭喜進入第 " + stage + " 關！";
+
+    document.getElementById("result").textContent =
+      "🎉 Level Up! 血量已補滿！";
+
+    document.getElementById("result").style.color = "#5f3dc4";
+    sound(1000);
+  }else{
+    gameClear = true;
+    document.getElementById("monster").textContent = "🏆";
+    document.getElementById("question").textContent = "全部破關！";
+    document.getElementById("result").textContent =
+      "🎉 You Win! 你完成三關卡！總分：" + score;
+    document.getElementById("result").style.color = "green";
+    sound(1200);
+  }
+}
+
+function resetGame(){
+  currentWord = null;
+  hp = 5;
+  maxHp = 5;
+  score = 0;
+  stage = 1;
+  stagePoint = 0;
+  gameClear = false;
+
+  document.getElementById("question").textContent = "按「開始」出題！";
+  document.getElementById("answer").value = "";
+  document.getElementById("result").textContent = "";
+  updateInfo();
+}
+
+document.getElementById("answer").addEventListener("keydown", function(event){
+  if(event.key === "Enter"){
+    checkAnswer();
+  }
+});
+
+updateInfo();
+</script>
+
+</body>
+</html>

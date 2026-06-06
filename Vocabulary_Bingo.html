@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>單字賓果 V3</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  text-align: center;
+  background: #f7f7ff;
+}
+h1 {
+  font-size: 42px;
+}
+button {
+  font-size: 22px;
+  padding: 12px 24px;
+  margin: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+}
+#question {
+  font-size: 40px;
+  color: #d6336c;
+  margin: 18px;
+  font-weight: bold;
+}
+#result {
+  font-size: 28px;
+  margin: 10px;
+  font-weight: bold;
+}
+#info {
+  font-size: 22px;
+  margin: 10px;
+}
+table {
+  margin: auto;
+  border-collapse: collapse;
+}
+td {
+  width: 140px;
+  height: 85px;
+  border: 2px solid #333;
+  font-size: 20px;
+  background: white;
+  cursor: pointer;
+}
+td.correct {
+  background: #ffd43b;
+  font-weight: bold;
+}
+td.wrong {
+  background: #ffa8a8;
+}
+td.free {
+  background: #b2f2bb;
+  font-weight: bold;
+}
+td.bingo {
+  background: #ff8787;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎯 Vocabulary Bingo V3</h1>
+
+<button onclick="drawQuestion()">抽題</button>
+<button onclick="restartGame()">重新開始</button>
+
+<div id="question">按「抽題」開始！</div>
+<div id="result"></div>
+<div id="info">時間：0 秒｜已抽題：0 題｜答對：0｜答錯：0</div>
+
+<table id="bingoCard"></table>
+
+<script>
+const words = [
+  ["attention", "注意力"],
+  ["public art", "公共藝術"],
+  ["community", "社區"],
+  ["mural", "壁畫"],
+  ["ordinary", "普通的"],
+  ["inspire", "啟發"],
+  ["graffiti", "塗鴉"],
+  ["message", "訊息、理念"],
+  ["canvas", "畫布"],
+  ["creative", "有創意的"],
+  ["teamwork", "團隊合作"],
+  ["describe", "描述"],
+  ["ceremony", "典禮"],
+  ["celebration", "慶祝活動"],
+  ["extremely", "非常地"],
+  ["melt", "融化"],
+  ["helpful", "樂於助人的"],
+  ["gentle", "溫柔的"],
+  ["silent", "安靜的"],
+  ["performance", "表演"],
+  ["experience", "經驗"],
+  ["successful", "成功的"],
+  ["decision", "決定"],
+  ["powerful", "強大的"],
+  ["graceful", "優雅的"],
+  ["frightening", "可怕的"],
+  ["quote", "名言"],
+  ["inspired", "受到啟發的"],
+  ["reporter", "記者"],
+  ["event", "活動"],
+  ["interview", "採訪"],
+  ["rise", "升起"],
+  ["rapidly", "快速地"],
+  ["pastry", "酥皮點心"],
+  ["calmly", "冷靜地"],
+  ["fluently", "流利地"],
+  ["achieve", "達成"],
+  ["decorate", "裝飾"],
+  ["announce", "宣布"],
+  ["memorable", "難忘的"],
+  ["organized", "有條理的"],
+  ["separate", "分開"],
+  ["expect", "預期"],
+  ["crumb", "麵包屑"],
+  ["painful", "疼痛的"],
+  ["poisonous", "有毒的"]
+];
+
+let questions = [];
+let cardWords = [];
+let currentQuestion = null;
+let drawnCount = 0;
+let correctCount = 0;
+let wrongCount = 0;
+let seconds = 0;
+let timer = null;
+let bingoDone = false;
+
+function shuffle(array) {
+  return array.sort(() => Math.random() - 0.5);
+}
+
+function startTimer() {
+  if (timer === null) {
+    timer = setInterval(() => {
+      seconds++;
+      updateInfo();
+    }, 1000);
+  }
+}
+
+function updateInfo() {
+  document.getElementById("info").textContent =
+    "時間：" + seconds + " 秒｜已抽題：" + drawnCount +
+    " 題｜答對：" + correctCount + "｜答錯：" + wrongCount;
+}
+
+function createCard() {
+  const table = document.getElementById("bingoCard");
+  table.innerHTML = "";
+
+  cardWords = shuffle([...words]).slice(0, 24);
+  let index = 0;
+
+  for (let r = 0; r < 5; r++) {
+    const row = document.createElement("tr");
+
+    for (let c = 0; c < 5; c++) {
+      const cell = document.createElement("td");
+
+      if (r === 2 && c === 2) {
+        cell.textContent = "FREE";
+        cell.dataset.word = "FREE";
+        cell.classList.add("correct");
+        cell.classList.add("free");
+      } else {
+        cell.textContent = cardWords[index][0];
+        cell.dataset.word = cardWords[index][0];
+        index++;
+      }
+
+      cell.onclick = function() {
+        checkAnswer(cell);
+      };
+
+      row.appendChild(cell);
+    }
+
+    table.appendChild(row);
+  }
+}
+
+function drawQuestion() {
+  if (bingoDone) return;
+
+  startTimer();
+
+  if (questions.length === 0) {
+    questions = shuffle([...cardWords]);
+  }
+
+  if (questions.length === 0) {
+    document.getElementById("question").textContent = "題目抽完了！";
+    return;
+  }
+
+  currentQuestion = questions.pop();
+  drawnCount++;
+
+  document.getElementById("question").textContent = currentQuestion[1];
+  document.getElementById("result").textContent = "";
+  updateInfo();
+}
+
+function checkAnswer(cell) {
+  if (bingoDone) return;
+
+  if (currentQuestion === null) {
+    document.getElementById("result").textContent = "請先按「抽題」！";
+    document.getElementById("result").style.color = "#f08c00";
+    return;
+  }
+
+  if (cell.classList.contains("correct") || cell.classList.contains("free")) {
+    document.getElementById("result").textContent = "這格已經選過了！";
+    document.getElementById("result").style.color = "#f08c00";
+    return;
+  }
+
+  if (cell.dataset.word === currentQuestion[0]) {
+    cell.classList.add("correct");
+    correctCount++;
+    document.getElementById("result").textContent = "✅ 答對！";
+    document.getElementById("result").style.color = "green";
+    currentQuestion = null;
+    checkBingo();
+  } else {
+    wrongCount++;
+    cell.classList.add("wrong");
+    document.getElementById("result").textContent =
+      "❌ 答錯！正確答案是：" + currentQuestion[0];
+    document.getElementById("result").style.color = "red";
+
+    setTimeout(() => {
+      cell.classList.remove("wrong");
+    }, 600);
+  }
+
+  updateInfo();
+}
+
+function checkBingo() {
+  const table = document.getElementById("bingoCard");
+  const cells = table.getElementsByTagName("td");
+
+  function isCorrect(r, c) {
+    return cells[r * 5 + c].classList.contains("correct");
+  }
+
+  let bingoLine = [];
+
+  for (let r = 0; r < 5; r++) {
+    let line = [];
+    for (let c = 0; c < 5; c++) {
+      if (isCorrect(r, c)) line.push(r * 5 + c);
+    }
+    if (line.length === 5) bingoLine = line;
+  }
+
+  for (let c = 0; c < 5; c++) {
+    let line = [];
+    for (let r = 0; r < 5; r++) {
+      if (isCorrect(r, c)) line.push(r * 5 + c);
+    }
+    if (line.length === 5) bingoLine = line;
+  }
+
+  let line1 = [];
+  for (let i = 0; i < 5; i++) {
+    if (isCorrect(i, i)) line1.push(i * 5 + i);
+  }
+  if (line1.length === 5) bingoLine = line1;
+
+  let line2 = [];
+  for (let i = 0; i < 5; i++) {
+    if (isCorrect(i, 4 - i)) line2.push(i * 5 + (4 - i));
+  }
+  if (line2.length === 5) bingoLine = line2;
+
+  if (bingoLine.length === 5) {
+    bingoDone = true;
+    clearInterval(timer);
+
+    bingoLine.forEach(i => {
+      cells[i].classList.add("bingo");
+    });
+
+    let total = correctCount + wrongCount;
+    let rate = total === 0 ? 0 : Math.round((correctCount / total) * 100);
+
+    setTimeout(() => {
+      alert(
+        "🎉 BINGO！\n" +
+        "時間：" + seconds + " 秒\n" +
+        "已抽題：" + drawnCount + " 題\n" +
+        "答對：" + correctCount + "\n" +
+        "答錯：" + wrongCount + "\n" +
+        "正確率：" + rate + "%"
+      );
+    }, 200);
+  }
+}
+
+function restartGame() {
+  questions = [];
+  currentQuestion = null;
+  drawnCount = 0;
+  correctCount = 0;
+  wrongCount = 0;
+  seconds = 0;
+  bingoDone = false;
+
+  clearInterval(timer);
+  timer = null;
+
+  document.getElementById("question").textContent = "按「抽題」開始！";
+  document.getElementById("result").textContent = "";
+
+  updateInfo();
+  createCard();
+}
+
+createCard();
+updateInfo();
+</script>
+
+</body>
+</html>

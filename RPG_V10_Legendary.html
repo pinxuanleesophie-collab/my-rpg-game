@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<title>知識王國：四年級傳說 高難度炸彈版</title>
+<style>
+body{font-family:Arial,"Microsoft JhengHei";text-align:center;color:white;background:linear-gradient(135deg,#1c1b3a,#0b7285);padding:20px}
+.box{max-width:1000px;margin:auto;background:rgba(0,0,0,.45);padding:22px;border-radius:22px}
+button{margin:6px;padding:10px 16px;border:0;border-radius:12px;font-size:17px;cursor:pointer}
+.ans{display:block;width:86%;margin:8px auto;background:white;color:#222}
+.ans.hidden{visibility:hidden}
+.bar{width:84%;height:22px;border:2px solid white;margin:8px auto;border-radius:20px;overflow:hidden}
+.fill{height:100%;transition:.3s}.hp{background:#ff6b6b}.boss{background:#845ef7}.exp{background:#ffd43b}
+#monster{font-size:80px}.map button{background:#4dabf7;color:white}.shop button{background:#51cf66;color:white}.bombs button{background:#ff922b;color:white}
+#q{font-size:24px;min-height:78px;display:flex;align-items:center;justify-content:center;line-height:1.4}
+.small{font-size:14px;opacity:.9}
+.boom{animation:boom .45s}
+@keyframes boom{0%{transform:scale(1)}50%{transform:scale(1.35) rotate(8deg);filter:drop-shadow(0 0 25px orange)}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+<div class="box">
+<h1>👑 知識王國：四年級傳說 高難度炸彈版 👑</h1>
+<p class="small">高難度數學無限題庫｜答案洗牌｜炸彈系統｜Boss 戰｜存檔</p>
+
+<div class="map">
+<button onclick="stage='mixed';msg('🏠 新手村：全科混合')">🏠 新手村</button>
+<button onclick="stage='math';msg('🌳 數學森林：高難度無限題庫')">🌳 數學森林</button>
+<button onclick="stage='chinese';msg('🌙 國語神殿')">🌙 國語神殿</button>
+<button onclick="stage='science';msg('🔬 自然研究所')">🔬 自然研究所</button>
+<button onclick="stage='social';msg('🏘️ 社會城鎮')">🏘️ 社會城鎮</button>
+</div>
+
+<h2 id="info"></h2>
+<div>❤️ HP</div><div class="bar"><div id="hpbar" class="fill hp"></div></div>
+<div>⭐ EXP</div><div class="bar"><div id="expbar" class="fill exp"></div></div>
+<div>🐲 Boss HP</div><div class="bar"><div id="bossbar" class="fill boss"></div></div>
+
+<div id="monster">👾</div>
+<h2 id="q">按開始冒險</h2>
+<div id="answers"></div>
+<button onclick="nextQ()">⚔️ 開始冒險</button>
+
+<h3>💣 炸彈技能</h3>
+<div class="bombs">
+<button onclick="useBomb()">💣 普通炸彈 -100HP</button>
+<button onclick="useSuperBomb()">🧨 超級炸彈 -250HP</button>
+<button onclick="useHintBomb()">🎯 提示炸彈：消除2個錯誤答案</button>
+</div>
+
+<h3>🛒 商店</h3>
+<div class="shop">
+<button onclick="buy('hp')">❤️ 補血 10金</button>
+<button onclick="buy('max')">💎 最大HP+20 50金</button>
+<button onclick="buy('exp')">📜 EXP+30 30金</button>
+<button onclick="buy('bomb')">💣 普通炸彈 30金</button>
+<button onclick="buy('superBomb')">🧨 超級炸彈 70金</button>
+<button onclick="buy('hintBomb')">🎯 提示炸彈 40金</button>
+</div>
+
+<button onclick="save()">💾 存檔</button>
+<button onclick="load()">📂 讀檔</button>
+<button onclick="reset()">🗑️ 重置</button>
+<p id="message">歡迎來到知識王國！</p>
+</div>
+
+<script>
+let p={lv:1,hp:120,max:120,exp:0,next:120,gold:0,atk:30,title:"新手冒險家",right:0,total:0,bomb:3,superBomb:1,hintBomb:2};
+let boss={hp:260,max:260}, stage="mixed", cur=null;
+
+const qs={chinese:[],math:[],science:[],social:[]};
+
+qs.chinese.push(
+["「皎潔」的意思？",["明亮潔白","炎熱","寒冷","黑暗"],0],
+["哪個是譬喻法？",["月亮像白玉盤","月亮陪我回家","風兒唱歌","小鳥說話"],0],
+["哪個是擬人法？",["風兒唱歌","月亮像盤子","星星很亮","天空很藍"],0],
+["《涸轍枯魚》的寓意？",["幫助別人要及時","魚不能離開水","要常常旅行","不要寫字"],0],
+["「窗前的月光」常連結哪種情感？",["思念","憤怒","驕傲","恐懼"],0],
+["「文字地圖」主要和什麼有關？",["用文字介紹地方特色","計算面積","昆蟲構造","時間換算"],0]
+);
+
+qs.math.push(
+["24/36 約分後？",["2/3","3/4","4/5","5/6"],0],
+["18/24 約分後？",["3/4","2/3","4/5","5/6"],0],
+["□/48 = 3/4，□ = ?",["36","32","40","44"],0],
+["18/□ = 6/8，□ = ?",["24","20","22","26"],0],
+["3.075 = ?",["3075/1000","375/100","307/100","3075/100"],0],
+["08:45+1小時35分+45分=?",["11:05","10:55","11:15","10:45"],0],
+["7/8 + 5/8 - 3/8 = ?",["9/8","8/8","10/8","11/8"],0],
+["11/24+7/24=?",["18/24","17/24","19/24","20/24"],0],
+["25×4×8=?",["800","400","200","100"],0]
+);
+
+qs.science.push(
+["昆蟲身體分成？",["頭、胸、腹","頭、手、腳","眼、嘴、尾","頭、翅、腳"],0],
+["不完全變態沒有？",["蛹","卵","若蟲","成蟲"],0],
+["下列哪個是再生能源？",["太陽能","石油","煤","天然氣"],0],
+["零垃圾行動重點？",["減少垃圾、重複使用、回收","製造更多垃圾","不用分類","多用一次性用品"],0]
+);
+
+qs.social.push(
+["視訊會議的優點？",["可遠距溝通","一定要搭飛機","不能看到對方","只能寫紙本信"],0],
+["家鄉風貌包含？",["自然與人文","只有道路","只有高樓","只有商店"],0],
+["人口老化是？",["老年人口比例增加","小孩增加","道路增加","汽車增加"],0],
+["地方特產通常和什麼有關？",["環境與產業","星座","遊戲分數","昆蟲腳數"],0]
+);
+
+function R(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function pick(arr){return arr[R(0,arr.length-1)]}
+function shuffleArray(array){let arr=[...array];for(let i=arr.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr}
+function makeQ(q,a,wrong){let choices=shuffleArray([String(a),...wrong.map(String)]);return {q:q,choices:choices,answer:choices.indexOf(String(a))}}
+
+function gcd(a,b){while(b){let t=b;b=a%b;a=t}return Math.abs(a)}
+function frac(n,d){let g=gcd(n,d);return `${n/g}/${d/g}`}
+
+function genHardEquivalent(){
+  let baseD=pick([7,8,9,10,12,14,16]);
+  let baseN=R(2,baseD-2);
+  let m=pick([3,4,5,6,8]);
+  return makeQ(`高難度等值分數：${baseN}/${baseD} = ?`,`${baseN*m}/${baseD*m}`,[`${baseN*m+1}/${baseD*m}`,`${baseN*m}/${baseD*m+1}`,`${baseN*m+2}/${baseD*m}`]);
+}
+function genHardReduce(){
+  let baseD=pick([7,8,9,10,11,12]);
+  let baseN=R(2,baseD-2);
+  let m=pick([4,5,6,7,8,9]);
+  return makeQ(`約分挑戰：${baseN*m}/${baseD*m} 約成最簡分數？`,frac(baseN*m,baseD*m),[`${baseN+1}/${baseD}`,`${baseN}/${baseD+1}`,`${Math.max(1,baseN-1)}/${baseD}`]);
+}
+function genMixedFraction(){
+  let d=pick([12,16,20,24,30,36]);
+  let a=R(4,Math.floor(d*0.7)), b=R(3,Math.floor(d*0.4)), c=R(2,Math.floor(d*0.3));
+  let ans=a+b-c;
+  return makeQ(`三步驟分數：${a}/${d}+${b}/${d}-${c}/${d}=?`,`${ans}/${d}`,[`${ans+1}/${d}`,`${ans-1}/${d}`,`${ans+2}/${d}`]);
+}
+function genCompareDecimal(){
+  let arr=[
+    ["0.56","0.605","0.65","0.506"],
+    ["0.7","0.07","0.707","0.77"],
+    ["1.08","1.8","1.008","1.18"],
+    ["2.305","2.35","2.053","2.503"]
+  ];
+  let x=pick(arr);
+  let max=x.map(Number).sort((a,b)=>b-a)[0].toString();
+  return makeQ(`小數比較：下列哪個最大？`,max,x.filter(v=>v!==max));
+}
+function genHardArea(){
+  let l=R(12,40), w=R(8,25);
+  if(Math.random()<.5)return makeQ(`陷阱題：長方形長${l}公尺、寬${w}公尺，周長是多少？`,(l+w)*2,[l*w,l+w,(l+w)*2+10]);
+  return makeQ(`陷阱題：長方形長${l}公尺、寬${w}公尺，面積是多少？`,l*w,[(l+w)*2,l+w,l*w+20]);
+}
+function genCompositeArea(){
+  let a=R(8,20), b=R(6,18), cutL=R(2,Math.floor(a/2)), cutW=R(2,Math.floor(b/2));
+  let ans=a*b-cutL*cutW;
+  return makeQ(`複合圖形：大長方形${a}×${b}，挖掉${cutL}×${cutW}，面積是多少？`,ans,[ans+cutL*cutW,ans-5,ans+10]);
+}
+function genHardTimeAdd(){
+  let h=R(7,18), m=pick([5,10,15,20,25,35,40,45,50]);
+  let add1=R(1,3)*60+pick([15,25,35,45,55]);
+  let add2=pick([25,35,45,55]);
+  let t=h*60+m+add1+add2, ah=Math.floor(t/60), am=t%60;
+  let ans=`${String(ah).padStart(2,"0")}:${String(am).padStart(2,"0")}`;
+  return makeQ(`時間挑戰：${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")} + ${Math.floor(add1/60)}小時${add1%60}分 + ${add2}分 = ?`,ans,[`${String(ah+1).padStart(2,"0")}:${String(am).padStart(2,"0")}`,`${String(ah).padStart(2,"0")}:${String((am+10)%60).padStart(2,"0")}`,`${String(ah-1).padStart(2,"0")}:${String(am).padStart(2,"0")}`]);
+}
+function genHardTimeBetween(){
+  let h=R(8,15), m=pick([5,10,15,20,25,35,40,45,50]);
+  let dur=R(2,5)*60+pick([15,25,35,45,55]);
+  let end=h*60+m+dur, eh=Math.floor(end/60), em=end%60;
+  let ah=Math.floor(dur/60), am=dur%60;
+  let ans=`${ah}小時${am}分`;
+  return makeQ(`經過時間：${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")} 到 ${String(eh).padStart(2,"0")}:${String(em).padStart(2,"0")}，經過多久？`,ans,[`${ah}小時${(am+10)%60}分`,`${ah+1}小時${am}分`,`${Math.max(0,ah-1)}小時${am}分`]);
+}
+function genHardCube(){
+  let a=R(4,8), b=R(3,7), c=R(3,6), ans=a*b*c;
+  return makeQ(`立方體挑戰：${a}×${b}×${c} 共有幾個小立方體？`,ans,[ans+12,ans-8,ans+6]);
+}
+function genSimplifyHard(){
+  let type=R(1,3);
+  if(type===1){
+    let a=pick([125,25,50]), b=pick([8,4,16]), c=R(6,18);
+    return makeQ(`簡化計算：${a}×${b}×${c}=?`,a*b*c,[a*b*c+c,a*b*(c+1),a*b*c-100]);
+  }
+  if(type===2){
+    let x=R(600,1500), a=R(100,300), b=R(10,80), ans=x-a-b;
+    return makeQ(`簡化計算：${x}-${a}-${b}=?`,ans,[x-(a+b)+10,x-a+b,ans-10]);
+  }
+  let n=R(300,900), ans=n*99;
+  return makeQ(`挑戰：${n}×99=?`,ans,[n*100,n*98,ans+99]);
+}
+function genHardMoney(){
+  let price=R(18,75), count=R(3,8), pay=pick([300,500,1000]);
+  let cost=price*count, change=pay-cost;
+  if(change<=0)return genHardArea();
+  return makeQ(`生活應用：${pay}元買${count}個${price}元的物品，找回多少元？`,change,[change+20,change-10,change+30]);
+}
+function genHardBoss(){
+  return pick([
+    ()=>makeQ("Boss題：24/32 約分後？","3/4",["2/3","4/5","5/6"]),
+    ()=>makeQ("Boss題：7/8+5/8-3/8=?","9/8",["8/8","10/8","11/8"]),
+    ()=>makeQ("Boss題：08:45 + 1小時35分 + 45分鐘 = ?","11:05",["10:55","11:15","10:45"]),
+    ()=>makeQ("Boss題：642+795+358 最方便先算哪一組？","642+358",["795+358","642+795","三個不能調換"]),
+    ()=>makeQ("Boss題：面積都12平方公分，周長一定相同嗎？","不一定",["一定","無法知道","一定比較大"])
+  ])();
+}
+function genMathAuto(){
+  return pick([genHardEquivalent,genHardReduce,genMixedFraction,genCompareDecimal,genHardArea,genCompositeArea,genHardTimeAdd,genHardTimeBetween,genHardCube,genSimplifyHard,genHardMoney,genHardBoss])();
+}
+
+function shuffleQuestion(question){
+  let correct=question[1][question[2]];
+  let choices=shuffleArray(question[1]);
+  return {q:question[0],choices:choices,answer:choices.indexOf(correct)};
+}
+function fixedPool(){return stage=="mixed"?[...qs.chinese,...qs.math,...qs.science,...qs.social]:qs[stage]}
+function nextQ(){
+  if(stage=="math" || (stage=="mixed" && Math.random()<0.75)){
+    cur=genMathAuto();
+  }else{
+    let a=fixedPool();
+    cur=shuffleQuestion(a[Math.floor(Math.random()*a.length)]);
+  }
+  q.innerText=cur.q;
+  answers.innerHTML=cur.choices.map((x,i)=>`<button class="ans" onclick="ans(${i})">${x}</button>`).join("");
+}
+function ans(i){
+  if(!cur)return;
+  p.total++;
+  if(i==cur.answer){
+    p.right++;p.exp+=25;p.gold+=7;boss.hp-=p.atk;msg("✅ 答對！攻擊 Boss！");
+    if(p.exp>=p.next){p.lv++;p.exp=0;p.next+=60;p.max+=20;p.hp=p.max;p.atk+=6;p.title=p.lv>=10?"知識王":p.lv>=5?"冒險高手":"新手冒險家";msg("🎉 升級！")}
+    checkBoss();
+  }else{
+    p.hp-=20;msg("❌ 答錯！正確答案："+cur.choices[cur.answer]);
+    if(p.hp<=0){alert("Game Over，HP恢復");p.hp=p.max}
+  }
+  update();save();setTimeout(nextQ,500);
+}
+function bombEffect(){monster.classList.add("boom");setTimeout(()=>monster.classList.remove("boom"),450)}
+function damageBoss(dmg,text){boss.hp=Math.max(0,boss.hp-dmg);bombEffect();msg(text);checkBoss();update();save()}
+function useBomb(){if(p.bomb<=0)return msg("💣 沒有普通炸彈了！");p.bomb--;damageBoss(100,"💥 普通炸彈爆炸！Boss -100HP！")}
+function useSuperBomb(){if(p.superBomb<=0)return msg("🧨 沒有超級炸彈了！");p.superBomb--;damageBoss(250,"🧨 超級炸彈爆炸！Boss -250HP！")}
+function useHintBomb(){
+  if(!cur)return msg("請先出題！");
+  if(p.hintBomb<=0)return msg("🎯 沒有提示炸彈了！");
+  p.hintBomb--;
+  let buttons=[...document.querySelectorAll(".ans")];
+  let wrong=buttons.map((b,i)=>({b,i})).filter(x=>x.i!==cur.answer&&!x.b.classList.contains("hidden"));
+  shuffleArray(wrong).slice(0,2).forEach(x=>x.b.classList.add("hidden"));
+  msg("🎯 提示炸彈！已消除2個錯誤答案！");
+  update();save();
+}
+function checkBoss(){if(boss.hp<=0){p.gold+=70;p.bomb+=1;boss.max+=100;boss.hp=boss.max;msg("🏆 打敗 Boss！獲得70金和普通炸彈×1！")}}
+function buy(t){
+  if(t=="hp"&&p.gold>=10){p.gold-=10;p.hp=Math.min(p.max,p.hp+40)}
+  else if(t=="max"&&p.gold>=50){p.gold-=50;p.max+=20;p.hp=p.max}
+  else if(t=="exp"&&p.gold>=30){p.gold-=30;p.exp+=30}
+  else if(t=="bomb"&&p.gold>=30){p.gold-=30;p.bomb++}
+  else if(t=="superBomb"&&p.gold>=70){p.gold-=70;p.superBomb++}
+  else if(t=="hintBomb"&&p.gold>=40){p.gold-=40;p.hintBomb++}
+  else return msg("金幣不夠！");
+  update();save();
+}
+function update(){
+  let rate=p.total?Math.round(p.right/p.total*100):100;
+  info.innerText=`${p.title}｜Lv.${p.lv}｜🪙${p.gold}｜攻擊${p.atk}｜答對率${rate}%｜💣${p.bomb}｜🧨${p.superBomb}｜🎯${p.hintBomb}`;
+  hpbar.style.width=p.hp/p.max*100+"%";
+  expbar.style.width=p.exp/p.next*100+"%";
+  bossbar.style.width=Math.max(0,boss.hp/boss.max*100)+"%";
+}
+function msg(t){message.innerText=t}
+function save(){localStorage.setItem("kk_hard_bomb",JSON.stringify({p,boss,stage}))}
+function load(){let d=localStorage.getItem("kk_hard_bomb");if(d){let o=JSON.parse(d);p=o.p;boss=o.boss;stage=o.stage;update();msg("📂 已讀檔")}}
+function reset(){localStorage.removeItem("kk_hard_bomb");location.reload()}
+load();update();
+</script>
+</body>
+</html>
