@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+  <html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考試複習小測驗</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+}
+    h1 {
+            color: #e0e0ff;
+            font-size: 1.8rem;
+      margin-bottom: 10px;
+      text-align: center;
+      text-shadow: 0 0 20px #7c4dff;
+}
+    p.subtitle {
+      color: #aaa;
+            margin-bottom: 30px;
+      font-size: 1rem;
+      text-align: center;
+    }
+    .grid {
+            display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      width: 100%;
+      max-width: 480px;
+}
+    a.card {
+      display: block;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 16px;
+      padding: 22px 24px;
+      text-decoration: none;
+      color: #fff;
+            transition: transform 0.2s, background 0.2s;
+    }
+    a.card:hover, a.card:active {
+            background: rgba(124,77,255,0.3);
+      transform: scale(1.03);
+    }
+    a.card .icon { font-size: 2rem; margin-bottom: 8px; }
+    a.card .title { font-size: 1.1rem; font-weight: bold; color: #c9b8ff; }
+        a.card .desc { font-size: 0.85rem; color: #aaa; margin-top: 4px; }
+        footer { margin-top: 30px; color: #555; font-size: 0.8rem; }
+  </style>
+    </head>
+    <body>
+      <h1>📚 考試複習小測驗</h1>
+      <p class="subtitle">選擇一個遊戲開始複習！</p>
+      <div class="grid">
+        <a class="card" href="RPG_V10_Legendary.html">
+          <div class="icon">⚔️</div>
+          <div class="title">RPG V10 Legendary</div>
+          <div class="desc">傳奇版 RPG 複習挑戰</div>
+        </a>
+        <a class="card" href="RPG_V10_The_Grammar_King.html">
+          <div class="icon">👑</div>
+          <div class="title">The Grammar King</div>
+      <div class="desc">文法國王挑戰賽</div>
+        </a>
+        <a class="card" href="Vocabulary_Bingo.html">
+          <div class="icon">🎯</div>
+          <div class="title">Vocabulary Bingo</div>
+          <div class="desc">單字賓果遊戲</div>
+        </a>
+        <a class="card" href="Vocabulary_Meaning_Game.html">
+          <div class="icon">📖</div>
+          <div class="title">Vocabulary Meaning Game</div>
+      <div class="desc">單字意義配對遊戲</div>
+        </a>
+      </div>
+      <footer>Powered by GitHub Pages</footer>
+    </body>
+    </html>
